@@ -13,14 +13,13 @@
 #include <WiFi.h>
 
 // REPLACE WITH YOUR RECEIVER MAC Address
-uint8_t broadcastAddress[] = {a0, b7, 65, 19, 15, 8c};
+uint8_t broadcastAddress[] = {0xa0, 0xb7, 0x65, 0x19, 0x15, 0x8c};
 
 // Structure example to send data
 // Must match the receiver structure
 typedef struct struct_message {
-  char a[32];
+  char mode[32];
   int b;
-  float c;
   bool d;
 } struct_message;
 
@@ -29,11 +28,11 @@ typedef struct struct_message {
 struct_message myData;
 
 //function to generate message to send. Should send however many degrees the stepper should move within myDate
-int generateMessage(int degrees)
+int generateMessage(char mode[32] = "NONE", int degrees = 0)
 {
-  myData.a = [0];
+  strcpy(myData.mode, mode);
   myData.b = degrees;
-  mydata.c = 0;
+  myData.c = 0.0;
   myData.d = 1;
   if(myData.d == 1)
   {
@@ -88,7 +87,7 @@ void setup() {
  
 void loop() {
   // Set values to send
-  if(generateMessage(1) == 0)
+  if(generateMessage("NONE", 1) == 0)
   {
     Serial.println("Error generating message.");
   }
@@ -98,13 +97,9 @@ void loop() {
    
   if (result == ESP_OK) {
     Serial.println("Sent with success");
-    digitalWrite(12, HIGH);
-    digitalWrite(13, LOW);
   }
   else {
     Serial.println("Error sending the data");
-    digitalWrite(13, HIGH);
-    digitalWrite(12, LOW);
   }
   delay(2000);
 }
