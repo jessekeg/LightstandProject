@@ -15,6 +15,10 @@
 // REPLACE WITH YOUR RECEIVER MAC Address
 uint8_t broadcastAddress[] = {0xa0, 0xb7, 0x65, 0x19, 0x15, 0x8c};
 
+//assigning a pin for the button
+const int pushButton = 4;
+
+
 // Structure example to send data
 // Must match the receiver structure
 typedef struct struct_message {
@@ -28,11 +32,17 @@ typedef struct struct_message {
 struct_message myData;
 
 //function to generate message to send. Should send however many degrees the stepper should move within myDate
-int generateMessage(char mode[32] = "NONE", int degrees = 0)
+int generateMessage(char mode[32] = "NONE", bool pushButton = 0)
 {
   strcpy(myData.mode, mode);
-  myData.b = degrees;
-  myData.c = 0.0;
+  if(pushButton == HIGH)
+  {
+    myData.b = 300; //acceleration of 300
+  }
+  else{
+    myData.b = 0;
+  }
+  
   myData.d = 1;
   if(myData.d == 1)
   {
@@ -57,8 +67,7 @@ void setup() {
   Serial.begin(115200);
 
   //setup success and fail pins
-  pinMode(12, OUTPUT);
-  pinMode(14, OUTPUT);
+  pinMode(pushButton, INPUT);
  
   // Set device as a Wi-Fi Station
   WiFi.mode(WIFI_STA);
@@ -87,7 +96,14 @@ void setup() {
  
 void loop() {
   // Set values to send
-  if(generateMessage("NONE", 1) == 0)
+  int pushButtonState = digitalRead(pushButton);
+  if (pushButtonState == HIGH)
+  {
+  Serial.println("PBS HIGH");
+  }else{
+    Serial.println("PBS LOW");
+  }
+  if(generateMessage("NONE", pushButtonState) == 0)
   {
     Serial.println("Error generating message.");
   }
@@ -101,5 +117,5 @@ void loop() {
   else {
     Serial.println("Error sending the data");
   }
-  delay(2000);
+  delay(15);
 }

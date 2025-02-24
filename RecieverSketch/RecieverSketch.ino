@@ -12,6 +12,10 @@
 #include <esp_now.h>
 #include <WiFi.h>
 
+//setting up servo pins
+const int DIR = 12;
+const int STEP = 14;
+
 // Structure example to receive data
 // Must match the sender structure
 typedef struct struct_message {
@@ -40,6 +44,10 @@ void OnDataRecv(const esp_now_recv_info_t *mac, const uint8_t *incomingData, int
 void setup() {
   // Initialize Serial Monitor
   Serial.begin(115200);
+
+  //setting up Stepper pins
+  pinMode(STEP, OUTPUT);
+  pinMode(DIR, OUTPUT);
   
   // Set device as a Wi-Fi Station
   WiFi.mode(WIFI_STA);
@@ -56,5 +64,18 @@ void setup() {
 }
  
 void loop() {
+  digitalWrite(DIR, LOW);
+  int stepsRegistered = myData.b;
+  while(myData.b>0)
+  {
+    //Serial.println(i);
+    digitalWrite(STEP, HIGH);
+    delayMicroseconds(1000);
+    digitalWrite(STEP, LOW);
+    delayMicroseconds(1000);
+  }
+  
+  digitalWrite(DIR, LOW);
 
+ 
 }
