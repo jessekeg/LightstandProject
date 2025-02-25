@@ -11,6 +11,7 @@
 
 #include <esp_now.h>
 #include <WiFi.h>
+#include "stepPackets.h"
 
 //setting up servo pins
 const int DIR = 12;
@@ -18,11 +19,14 @@ const int STEP = 14;
 
 // Structure example to receive data
 // Must match the sender structure
+#ifndef STEP_PACKETS
+#define STEP_PACKETS
 typedef struct struct_message {
     char mode[32];
     int b;
     bool d;
 } struct_message;
+#endif
 
 // Create a struct_message called myData
 struct_message myData;
@@ -34,10 +38,10 @@ void OnDataRecv(const esp_now_recv_info_t *mac, const uint8_t *incomingData, int
   Serial.println(len);
   Serial.print("Char: ");
   Serial.println(myData.mode);
-  Serial.print("Int: ");
-  Serial.println(myData.b);
-  Serial.print("Float: ");
-  Serial.println(myData.d);
+  Serial.print("X_DATA ");
+  Serial.println(myData.X_DATA);
+  Serial.print("Y_DATA ");
+  Serial.println(myData.Y_DATA);
   Serial.println();
 }
  
@@ -64,9 +68,13 @@ void setup() {
 }
  
 void loop() {
-  digitalWrite(DIR, LOW);
-  int stepsRegistered = myData.b;
-  while(myData.b>0)
+  if(myData.X_DATA > 0){
+    digitalWrite(DIR, LOW); //changing direction
+  }else if(myData.X_DATA < 0){
+    digitalWrite(DIR, HIGH);
+  }
+  int current = myData.X_DATA;
+  while(myData.X_DATA == current && myData.X_DATA != 0)
   {
     //Serial.println(i);
     digitalWrite(STEP, HIGH);
@@ -75,7 +83,6 @@ void loop() {
     delayMicroseconds(1000);
   }
   
-  digitalWrite(DIR, LOW);
 
  
 }

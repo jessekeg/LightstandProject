@@ -1,58 +1,84 @@
 /*
-  Rui Santos
-  Complete project details at https://RandomNerdTutorials.com/esp-now-esp32-arduino-ide/
-  
-  Permission is hereby granted, free of charge, to any person obtaining a copy
-  of this software and associated documentation files.
-  
-  The above copyright notice and this permission notice shall be included in all
-  copies or substantial portions of the Software.
+  Jesse Kegley
+  Usage:
+    Sending data over ESP-NOW protocol in order to control a pair of servo motors
+  Pins:
+    GPIO 4 - pushButtonIn
 */
 
 #include <esp_now.h>
 #include <WiFi.h>
-
+#include "stepPackets.h"
 // REPLACE WITH YOUR RECEIVER MAC Address
 uint8_t broadcastAddress[] = {0xa0, 0xb7, 0x65, 0x19, 0x15, 0x8c};
 
 //assigning a pin for the button
 const int pushButton = 4;
+const int pushButton2 = 3;
+const int dirButton = 12;
+const int dirButton2 = 6;
 
+#ifndef STEP_PACKETS
+#define STEP_PACKETS
+//Enumerating a mode type to define which motor to control within the message
+enum modes{
+  NONE,
+  X_MOTOR,
+  Y_MOTOR,
+  SYNCHRO
+};
 
 // Structure example to send data
 // Must match the receiver structure
 typedef struct struct_message {
-  char mode[32];
+  modes mode;
   int b;
   bool d;
 } struct_message;
-
+#endif
 
 // Create a struct_message called myData
 struct_message myData;
 
 //function to generate message to send. Should send however many degrees the stepper should move within myDate
-int generateMessage(char mode[32] = "NONE", bool pushButton = 0)
+int generateMessage(modes mode_given, bool pushButton, bool pushButton1, bool dirButton, bool dirButton1)
 {
-  strcpy(myData.mode, mode);
-  if(pushButton == HIGH)
-  {
-    myData.b = 300; //acceleration of 300
+  myData.mode = mode_given;
+  myData.Type = ACCEL;
+  if(mode_given == X_MOTOR || mode_given == SYNCHRO){ //setting x data
+    if(pushButton == HIGH && dirButton == HIGH)
+    {
+      myData.X_DATA = 300; //acceleration of 300
+    }
+    else if(dirButton == LOW && pushButton == HIGH)
+    {
+        myData.X_DATA = -300;
+    }
+    else
+    {
+      myData.X_DATA = 0;
+    }
   }
-  else{
-    myData.b = 0;
+  if(mode_given == Y_MOTOR || mode_given == SYNCHRO)
+  { //setting y data
+      if(pushButton2 == HIGH && dirButton2 == HIGH)
+      {
+          myData.Y_DATA = 300;
+      }
+      else if(dirButton2 == LOW && pushButton2 == HIGH)
+      {
+          myData.Y_DATA = -300;
+      }
+      else
+      {
+        myData.Y_DATA = 0;
+      }
   }
-  
-  myData.d = 1;
-  if(myData.d == 1)
-  {
     return 1;
-    //returning 1 if the value has been initialized correctly
-  }
-
-  return 0;  //else returning 0
-  
 }
+
+  
+
 
 esp_now_peer_info_t peerInfo;
 
@@ -68,6 +94,8 @@ void setup() {
 
   //setup success and fail pins
   pinMode(pushButton, INPUT);
+  pinMode(dirButton, INPUT);
+
  
   // Set device as a Wi-Fi Station
   WiFi.mode(WIFI_STA);
@@ -96,14 +124,17 @@ void setup() {
  
 void loop() {
   // Set values to send
-  int pushButtonState = digitalRead(pushButton);
-  if (pushButtonState == HIGH)
+  int PB_State = digitalRead(pushButton); //reading x push button
+  int PB2_State = digitalRead(pushButton2);
+  int DB_State = digitalRead(dirButton);
+  int DB2_State = digitalRead(dirButton2);
+  if (PB_State == HIGH)
   {
   Serial.println("PBS HIGH");
   }else{
     Serial.println("PBS LOW");
   }
-  if(generateMessage("NONE", pushButtonState) == 0)
+  if(generateMessage(SYNCHRO, PB_State, PB2_State, DB_State, DB2_State) == 0)
   {
     Serial.println("Error generating message.");
   }
