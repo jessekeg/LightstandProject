@@ -15,8 +15,8 @@ uint8_t broadcastAddress[] = {0xa0, 0xb7, 0x65, 0x19, 0x15, 0x8c};
 //assigning a pin for the button
 const int pushButton = 4;
 const int pushButton2 = 3;
-const int dirButton = 12;
-const int dirButton2 = 6;
+const int dirButton = 2;
+const int dirButton2 = 5;
 
 #ifndef STEP_PACKETS
 #define STEP_PACKETS
@@ -95,7 +95,8 @@ void setup() {
   //setup success and fail pins
   pinMode(pushButton, INPUT);
   pinMode(dirButton, INPUT);
-
+  pinMode(dirButton2, INPUT);
+  pinMode(pushButton2, INPUT);
  
   // Set device as a Wi-Fi Station
   WiFi.mode(WIFI_STA);

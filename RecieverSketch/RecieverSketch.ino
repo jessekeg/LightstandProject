@@ -1,13 +1,4 @@
-/*
-  Rui Santos
-  Complete project details at https://RandomNerdTutorials.com/esp-now-esp32-arduino-ide/
-  
-  Permission is hereby granted, free of charge, to any person obtaining a copy
-  of this software and associated documentation files.
-  
-  The above copyright notice and this permission notice shall be included in all
-  copies or substantial portions of the Software.
-*/
+
 
 #include <esp_now.h>
 #include <WiFi.h>
@@ -16,6 +7,8 @@
 //setting up servo pins
 const int DIR = 12;
 const int STEP = 14;
+const int DIR1 = 34;
+const int STEP1 = 35;
 
 // Structure example to receive data
 // Must match the sender structure
@@ -52,7 +45,8 @@ void setup() {
   //setting up Stepper pins
   pinMode(STEP, OUTPUT);
   pinMode(DIR, OUTPUT);
-  
+  pinMode(DIR1, OUTPUT);
+  pinMode(STEP1, OUTPUT);
   // Set device as a Wi-Fi Station
   WiFi.mode(WIFI_STA);
 
@@ -73,13 +67,27 @@ void loop() {
   }else if(myData.X_DATA < 0){
     digitalWrite(DIR, HIGH);
   }
+  if(myData.Y_DATA > 0){
+    digitalWrite(DIR1, LOW); //changing direction
+  }else if(myData.Y_DATA < 0){
+    digitalWrite(DIR1, HIGH);
+  }
   int current = myData.X_DATA;
+  int currentY = myData.Y_DATA;
   while(myData.X_DATA == current && myData.X_DATA != 0)
   {
     //Serial.println(i);
     digitalWrite(STEP, HIGH);
-    delayMicroseconds(1000);
+    delayMicroseconds(5000);
     digitalWrite(STEP, LOW);
+    delayMicroseconds(5000);
+  }
+  while(myData.Y_DATA == currentY && myData.Y_DATA != 0)
+  {
+    //Serial.println(i);
+    digitalWrite(STEP1, HIGH);
+    delayMicroseconds(1000);
+    digitalWrite(STEP1, LOW);
     delayMicroseconds(1000);
   }
   
