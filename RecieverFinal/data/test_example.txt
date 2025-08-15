@@ -1,0 +1,4 @@
+Hello World!
+This is the example.txt file, we're gonna try to
+read it through the esp32 serial moniter
+
